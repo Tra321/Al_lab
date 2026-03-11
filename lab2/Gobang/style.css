@@ -1,0 +1,221 @@
+/* 基础样式 */
+body {
+    font-family: 'Arial', sans-serif;
+    transition: background-color 0.3s ease;
+}
+
+/* 棋盘样式 */
+#board {
+    background-color: #f0d9b5;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* 棋盘风格 */
+.board-wood {
+    background-color: #d4a76a !important;
+    background-image: url('data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z" fill="%238b6914" fill-opacity="0.1" fill-rule="evenodd"/%3E%3C/svg%3E');
+}
+
+.board-modern {
+    background-color: #e6e6e6 !important;
+    background-image: linear-gradient(45deg, #d1d1d1 25%, transparent 25%, transparent 75%, #d1d1d1 75%, #d1d1d1);
+    background-size: 20px 20px;
+}
+
+/* 棋子样式 */
+.piece {
+    position: absolute;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    animation: drop-in 0.3s ease-out;
+}
+
+.piece-black {
+    background-color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.piece-white {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border: 1px solid #ddd;
+}
+
+/* 3D棋子效果 */
+.piece-3d.piece-black {
+    background: radial-gradient(circle at 30% 30%, #555, #000);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.piece-3d.piece-white {
+    background: radial-gradient(circle at 30% 30%, #fff, #e0e0e0);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* 玻璃棋子效果 */
+.piece-glass.piece-black {
+    background: rgba(51, 51, 51, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.piece-glass.piece-white {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 动画效果 */
+@keyframes drop-in {
+    0% {
+        transform: scale(0) translateY(-20px);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) translateY(10px);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 胜利动画 */
+@keyframes win-animation {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+    }
+}
+
+.win-piece {
+    animation: win-animation 1s ease-in-out infinite;
+}
+
+/* 悬停预览效果 */
+.hover-preview {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+/* 游戏结束弹窗 */
+#game-over {
+    animation: fade-in 0.3s ease-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    main {
+        flex-direction: column;
+    }
+    
+    #board {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .container {
+        padding: 0 10px;
+    }
+}
+
+/* 深色主题 */
+.dark-theme {
+    background-color: #1a1a1a !important;
+    color: #f0f0f0 !important;
+}
+
+.dark-theme .bg-white {
+    background-color: #2d2d2d !important;
+    color: #f0f0f0 !important;
+}
+
+.dark-theme .bg-gray-100 {
+    background-color: #3d3d3d !important;
+    color: #f0f0f0 !important;
+}
+
+.dark-theme .bg-gray-800 {
+    background-color: #121212 !important;
+}
+
+.dark-theme #board {
+    background-color: #4a3728 !important;
+}
+
+.dark-theme .board-wood {
+    background-color: #5d4026 !important;
+}
+
+.dark-theme .board-modern {
+    background-color: #3d3d3d !important;
+    background-image: linear-gradient(45deg, #4d4d4d 25%, transparent 25%, transparent 75%, #4d4d4d 75%, #4d4d4d);
+}
+
+/* 按钮样式 */
+button {
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* 禁用按钮样式 */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: none;
+}
+
+/* 模态框样式 */
+#tutorial-modal {
+    animation: fade-in 0.3s ease-out;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

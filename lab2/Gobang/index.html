@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋游戏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center">
+    <header class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-4 px-6 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">五子棋游戏</h1>
+            <div class="flex space-x-4">
+                <button id="theme-toggle" class="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 transition">
+                    切换主题
+                </button>
+                <button id="settings-btn" class="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 transition">
+                    设置
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+        <!-- 左侧游戏信息 -->
+        <div class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-4">
+            <h2 class="text-xl font-semibold mb-4 text-center">游戏信息</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">游戏模式</h3>
+                <div class="space-y-2">
+                    <button id="mode-human" class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+                        双人对战
+                    </button>
+                    <button id="mode-ai" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        人机对战
+                    </button>
+                    <button id="mode-online" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        在线对战
+                    </button>
+                </div>
+            </div>
+
+            <div id="ai-difficulty" class="mb-6 hidden">
+                <h3 class="text-lg font-medium mb-2">AI难度</h3>
+                <div class="space-y-2">
+                    <button id="ai-easy" class="w-full py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                        初级
+                    </button>
+                    <button id="ai-medium" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        中级
+                    </button>
+                    <button id="ai-hard" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        高级
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">当前状态</h3>
+                <div class="bg-gray-100 p-3 rounded-md">
+                    <p id="current-player" class="text-center font-bold">当前玩家: <span class="text-black">黑棋</span></p>
+                    <p id="game-status" class="text-center mt-2">游戏状态: 准备开始</p>
+                    <p id="move-count" class="text-center mt-2">步数: 0</p>
+                    <div id="timer" class="text-center mt-2">时间: 00:00</div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">游戏控制</h3>
+                <div class="space-y-2">
+                    <button id="start-game" class="w-full py-2 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                        开始游戏
+                    </button>
+                    <button id="restart-game" class="w-full py-2 px-4 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
+                        重新开始
+                    </button>
+                    <button id="undo-move" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition" disabled>
+                        悔棋
+                    </button>
+                    <button id="redo-move" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition" disabled>
+                        撤销悔棋
+                    </button>
+                    <button id="save-game" class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+                        保存游戏
+                    </button>
+                    <button id="load-game" class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+                        加载游戏
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">战绩统计</h3>
+                <div class="bg-gray-100 p-3 rounded-md">
+                    <p>胜场: <span id="wins">0</span></p>
+                    <p>负场: <span id="losses">0</span></p>
+                    <p>平局: <span id="draws">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中央棋盘 -->
+        <div class="w-full md:w-2/4 flex flex-col items-center">
+            <div class="relative">
+                <canvas id="board" width="450" height="450" class="border-4 border-gray-800 rounded-md shadow-lg"></canvas>
+                <div id="game-over" class="absolute inset-0 flex flex-col items-center justify-center bg-black/70 rounded-md hidden">
+                    <h2 id="game-over-message" class="text-3xl font-bold text-white mb-4"></h2>
+                    <button id="play-again" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
+                        再玩一局
+                    </button>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <p class="text-sm text-gray-600">使用鼠标点击棋盘落子</p>
+            </div>
+        </div>
+
+        <!-- 右侧功能区 -->
+        <div class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-4">
+            <h2 class="text-xl font-semibold mb-4 text-center">游戏功能</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">棋盘风格</h3>
+                <div class="space-y-2">
+                    <button id="board-classic" class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+                        经典
+                    </button>
+                    <button id="board-wood" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        木纹
+                    </button>
+                    <button id="board-modern" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        现代
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">棋子样式</h3>
+                <div class="space-y-2">
+                    <button id="piece-classic" class="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+                        经典
+                    </button>
+                    <button id="piece-glass" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        玻璃
+                    </button>
+                    <button id="piece-3d" class="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition">
+                        3D
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">排行榜</h3>
+                <div class="bg-gray-100 p-3 rounded-md">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>1. 玩家1</span>
+                            <span>1000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>2. 玩家2</span>
+                            <span>850</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>3. 玩家3</span>
+                            <span>720</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>4. 玩家4</span>
+                            <span>650</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>5. 玩家5</span>
+                            <span>580</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">游戏教程</h3>
+                <button id="tutorial-btn" class="w-full py-2 px-4 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition">
+                    查看教程
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- 教程模态框 -->
+    <div id="tutorial-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">五子棋游戏教程</h2>
+                <button id="close-tutorial" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <h3 class="text-lg font-medium">游戏规则</h3>
+                    <p>五子棋是一种两人对弈的纯策略型棋类游戏，黑白双方交替落子，先在一条直线（横、竖、斜向）上形成五连子的一方获胜。</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium">操作方法</h3>
+                    <p>1. 选择游戏模式（双人对战、人机对战或在线对战）</p>
+                    <p>2. 点击棋盘上的交叉点落子</p>
+                    <p>3. 使用游戏控制按钮进行悔棋、重新开始等操作</p>
+                    <p>4. 可以自定义棋盘风格和棋子样式</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium">AI难度说明</h3>
+                    <p>初级：AI会随机落子，适合初学者</p>
+                    <p>中级：AI会简单评估局势，有一定的策略</p>
+                    <p>高级：AI会深度评估局势，有较强的策略性</p>
+                </div>
+            </div>
+            <div class="mt-6 text-right">
+                <button id="close-tutorial-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+                    我知道了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full bg-gray-800 text-white py-4 px-6 mt-auto">
+        <div class="container mx-auto text-center">
+            <p>© 2026 五子棋游戏 - 智能应用系统设计</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
