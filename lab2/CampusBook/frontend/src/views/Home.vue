@@ -1,87 +1,205 @@
 <template>
-  <div class="home">
-    <h1>校园二手书交易平台</h1>
-    <div class="book-list">
-      <div v-for="book in books" :key="book.id" class="book-item">
-        <h3>{{ book.title }}</h3>
-        <p>作者: {{ book.author }}</p>
-        <p>价格: ¥{{ book.price }}</p>
-        <p>成色: {{ book.condition }}</p>
-        <el-button type="primary" @click="goToDetail(book.id)">查看详情</el-button>
+  <div class="home-container">
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <div class="search-content">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="请输入书名搜索"
+          class="search-input"
+          @keyup.enter="search"
+        >
+          <template #append>
+            <el-button @click="search"><el-icon><Search /></el-icon></el-button>
+          </template>
+        </el-input>
+        <div class="category-buttons">
+          <el-button v-for="category in categories" :key="category.value" @click="goToCategory(category.value)">{{ category.label }}</el-button>
+        </div>
       </div>
     </div>
+
+    <!-- 书籍列表 -->
+    <el-card class="books-card">
+      <template #header>
+        <div class="books-header">
+          <h2>最新发布</h2>
+          <el-button type="primary" @click="$router.push('/publish')">发布书籍</el-button>
+        </div>
+      </template>
+      <div v-loading="loading" class="book-list">
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="book in books" :key="book.id" class="book-item">
+            <el-card :body-style="{ padding: '0px' }" @click="goToDetail(book.id)">
+              <img :src="book.images[0] || 'https://via.placeholder.com/200'" class="book-img" alt="book cover" />
+              <div class="book-info">
+                <h3 class="book-title">{{ book.title }}</h3>
+                <p class="book-author">{{ book.author }}</p>
+                <p class="book-price">¥{{ book.price }}</p>
+                <p class="book-condition">{{ book.condition }}</p>
+                <p class="book-seller">卖家：{{ book.seller }}</p>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+        <div v-if="books.length === 0" class="no-books">
+          <el-empty description="暂无书籍"></el-empty>
+        </div>
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { Search } from '@element-plus/icons-vue'
 
 const router = useRouter()
+const loading = ref(true)
 const books = ref([])
+const searchKeyword = ref('')
 
-// 模拟数据
-const mockBooks = [
-  {
-    id: 1,
-    title: '大学英语四级词汇',
-    author: '王长喜',
-    price: 25.00,
-    condition: '九成新',
-    category: '教材类'
-  },
-  {
-    id: 2,
-    title: '高等数学',
-    author: '同济大学数学系',
-    price: 30.00,
-    condition: '八成新',
-    category: '教材类'
-  },
-  {
-    id: 3,
-    title: 'Python编程从入门到精通',
-    author: '黑马程序员',
-    price: 45.00,
-    condition: '全新',
-    category: '课外阅读'
-  }
+const categories = [
+  { label: '教材类', value: '教材类' },
+  { label: '考研资料', value: '考研资料' },
+  { label: '课外阅读', value: '课外阅读' },
+  { label: '其他', value: '其他' }
 ]
 
-onMounted(() => {
-  // 模拟API请求
-  books.value = mockBooks
-})
+const getBooks = async () => {
+  try {
+    const { data } = await axios.get('/api/books')
+    if (data.code === 200) {
+      books.value = data.data
+    } else {
+      ElMessage.error(data.message)
+    }
+  } catch (error) {
+    ElMessage.error('获取书籍列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+const search = () => {
+  if (searchKeyword.value) {
+    router.push({ path: '/search', query: { keyword: searchKeyword.value } })
+  }
+}
+
+const goToCategory = (category) => {
+  router.push(`/category/${category}`)
+}
 
 const goToDetail = (id) => {
   router.push(`/book/${id}`)
 }
+
+onMounted(() => {
+  getBooks()
+})
 </script>
 
 <style scoped>
-.home {
+.home-container {
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.search-bar {
+  background-color: #409eff;
+  padding: 30px 0;
+  margin-bottom: 20px;
+}
+
+.search-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.search-input {
+  width: 400px;
+  margin-right: 20px;
+}
+
+.category-buttons {
+  margin-top: 20px;
+}
+
+.books-card {
+  margin-bottom: 20px;
+}
+
+.books-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.books-header h2 {
+  margin: 0;
+  color: #333;
 }
 
 .book-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
   margin-top: 20px;
 }
 
 .book-item {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  cursor: pointer;
 }
 
-.book-item h3 {
-  margin-bottom: 10px;
+.book-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
 }
 
-.book-item p {
-  margin: 5px 0;
+.book-info {
+  padding: 15px;
+}
+
+.book-title {
+  font-size: 16px;
+  margin: 0 0 10px 0;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-author {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.book-price {
+  font-size: 18px;
+  font-weight: bold;
+  color: #f56c6c;
+  margin: 0 0 10px 0;
+}
+
+.book-condition {
+  font-size: 14px;
+  color: #909399;
+  margin: 0 0 10px 0;
+}
+
+.book-seller {
+  font-size: 14px;
+  color: #909399;
+  margin: 0;
+}
+
+.no-books {
+  text-align: center;
+  padding: 100px 0;
 }
 </style>

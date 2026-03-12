@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
-from app.models.models import User
-from app import db
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import get_db
 import hashlib
 
 user_routes = Blueprint('user_routes', __name__)
@@ -20,20 +22,20 @@ def register():
     email = data.get('email', '')
     
     # 检查用户名是否已存在
-    if User.query.filter_by(username=username).first():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT id FROM user WHERE username = ?', (username,))
+    if cur.fetchone():
+        conn.close()
         return jsonify({'code': 400, 'message': '用户名已存在'})
     
     # 创建新用户
-    new_user = User(
-        username=username,
-        password=hash_password(password),
-        nickname=nickname,
-        phone=phone,
-        email=email
-    )
-    
-    db.session.add(new_user)
-    db.session.commit()
+    cur.execute('''
+        INSERT INTO user (username, password, nickname, phone, email)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (username, hash_password(password), nickname, phone, email))
+    conn.commit()
+    conn.close()
     
     return jsonify({'code': 200, 'message': '注册成功'})
 
@@ -45,14 +47,19 @@ def login():
     password = data.get('password')
     
     # 查找用户
-    user = User.query.filter_by(username=username).first()
-    if not user or user.password != hash_password(password):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT id, nickname, avatar, password FROM user WHERE username = ?', (username,))
+    user = cur.fetchone()
+    conn.close()
+    
+    if not user or user['password'] != hash_password(password):
         return jsonify({'code': 400, 'message': '用户名或密码错误'})
     
     return jsonify({'code': 200, 'message': '登录成功', 'data': {
-        'id': user.id,
-        'nickname': user.nickname,
-        'avatar': user.avatar
+        'id': user['id'],
+        'nickname': user['nickname'],
+        'avatar': user['avatar']
     }})
 
 @user_routes.route('/profile', methods=['GET'])
@@ -60,16 +67,21 @@ def get_profile():
     """获取用户信息"""
     # 这里应该从token中获取用户ID，暂时使用固定ID
     user_id = 1
-    user = User.query.get(user_id)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT id, nickname, avatar, phone, email FROM user WHERE id = ?', (user_id,))
+    user = cur.fetchone()
+    conn.close()
+    
     if not user:
         return jsonify({'code': 404, 'message': '用户不存在'})
     
     return jsonify({'code': 200, 'data': {
-        'id': user.id,
-        'nickname': user.nickname,
-        'avatar': user.avatar,
-        'phone': user.phone,
-        'email': user.email
+        'id': user['id'],
+        'nickname': user['nickname'],
+        'avatar': user['avatar'],
+        'phone': user['phone'],
+        'email': user['email']
     }})
 
 @user_routes.route('/profile', methods=['PUT'])
@@ -77,14 +89,23 @@ def update_profile():
     """更新用户信息"""
     # 这里应该从token中获取用户ID，暂时使用固定ID
     user_id = 1
-    user = User.query.get(user_id)
-    if not user:
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('SELECT id FROM user WHERE id = ?', (user_id,))
+    if not cur.fetchone():
+        conn.close()
         return jsonify({'code': 404, 'message': '用户不存在'})
     
     data = request.get_json()
-    user.nickname = data.get('nickname', user.nickname)
-    user.avatar = data.get('avatar', user.avatar)
+    nickname = data.get('nickname')
+    avatar = data.get('avatar')
     
-    db.session.commit()
+    if nickname:
+        cur.execute('UPDATE user SET nickname = ? WHERE id = ?', (nickname, user_id))
+    if avatar:
+        cur.execute('UPDATE user SET avatar = ? WHERE id = ?', (avatar, user_id))
+    
+    conn.commit()
+    conn.close()
     
     return jsonify({'code': 200, 'message': '更新成功'})
